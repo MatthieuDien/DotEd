@@ -1,46 +1,18 @@
 import signal
 import sys
-import pickle
 
-from PyQt5.QtCore import Qt, QRectF, QMarginsF
-from PyQt5.QtWidgets import *
+from PyQt5.QtCore import Qt, QRectF
+from PyQt5.QtWidgets import QApplication, QGraphicsView, QVBoxLayout, QPushButton, QWidget
+from graph import GraphicsGraph
 
-from node import GraphicsNode
 
 signal.signal(signal.SIGINT, signal.SIG_DFL)
-
-class Scene(QGraphicsScene):
-    def __init__(self, *args, **kwargs):
-        QGraphicsScene.__init__(self, *args, **kwargs)
-
-    def mouseDoubleClickEvent(self, e):
-        print("click")
-        print(e.scenePos().x())
-
-        if e.button() == Qt.LeftButton :
-            pos = e.scenePos()
-            ellipse = GraphicsNode(self, label="lolilol")
-            ellipse.setPos(pos)
-            self.addItem(ellipse)
-
-    def dragEnterEvent(self, e):
-        print("drag enter")
-        print(e.mimeData().formats())
-        e.acceptProposedAction()
-        
-    def dragMoveEvent(self, e):
-        self.mouseGrabberItem().setPos(e.scenePos())
-        self.update()        
-    
-    def dropEvent(self,e):
-        self.mouseGrabberItem().setPos(e.scenePos())
-        self.update()
     
 class View(QGraphicsView):
 
     def __init__(self, parent):
         super().__init__(parent)
-        self.scene = Scene(self)
+        self.scene = GraphicsGraph(self)
         self.setScene(self.scene);
         self.setSceneRect(QRectF(self.viewport().rect()));
         
