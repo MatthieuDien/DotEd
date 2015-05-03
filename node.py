@@ -12,6 +12,7 @@ class GraphicsNode(QGraphicsEllipseItem):
         self.gr_item = QGraphicsSimpleTextItem(self.text, self)
         self.setRect(self.gr_item.boundingRect().marginsAdded(QMarginsF(10,10,10,10)))
         self.setFlags(QGraphicsItem.ItemIsMovable)
+        self.observers = set()
 
     def mouseMoveEvent(self, e):
         modifiers = QApplication.keyboardModifiers()
@@ -23,3 +24,15 @@ class GraphicsNode(QGraphicsEllipseItem):
             drag.exec(Qt.MoveAction)
             self.ungrabMouse()
 
+    def paint(self, *args, **kwargs):
+        QGraphicsEllipseItem.paint(self, *args, **kwargs)
+        for obs in self.observers:
+            obs.obsUpdate()
+
+    def addObserver(self, obs):
+        if obs not in self.observers:
+            self.observers.add(obs)
+
+    def delObserver(self, obs):
+        if obs in self.observers:
+            self.obervers.remove(obs)
