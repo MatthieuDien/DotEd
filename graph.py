@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import QGraphicsScene
 from PyQt5.QtCore import Qt, QPointF
+from PyQt5.QtGui import QTransform
 from node import GraphicsNode
 from edge import GraphicsEdge
 
@@ -21,17 +22,13 @@ class GraphicsGraph(QGraphicsScene):
 
 
     def mouseDoubleClickEvent(self, e):
-        print("click")
-        print(e.scenePos().x())
-
-        if e.button() == Qt.LeftButton :
+        if e.button() == Qt.LeftButton and self.itemAt(e.scenePos(), QTransform()) == None:
             pos = e.scenePos()
             ellipse = GraphicsNode(label="lolilol")
             ellipse.setPos(pos)
             self.addItem(ellipse)
 
     def dragEnterEvent(self, e):
-        print(e.mimeData().formats())
         if e.mimeData().hasText() :
             if e.mimeData().text() == "node":
                 e.acceptProposedAction()
