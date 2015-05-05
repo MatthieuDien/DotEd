@@ -3,8 +3,9 @@ import sys
 
 from PyQt5.QtCore import Qt, QRectF
 from PyQt5.QtWidgets import QApplication, QGraphicsView, QVBoxLayout, QPushButton, QWidget
+from PyQt5.QtGui import QCursor
 from graph import GraphicsGraph
-
+from node import GraphicsNode
 
 signal.signal(signal.SIGINT, signal.SIG_DFL)
     
@@ -20,6 +21,7 @@ class MyWindow(QWidget):
     def __init__(self):
         QWidget.__init__(self)
         self.view = View(self)
+        self.view.setMouseTracking(True)
         self.button = QPushButton('Clear View', self)
         self.button.clicked.connect(self.handleClearView)
         layout = QVBoxLayout(self)

@@ -18,6 +18,8 @@ class GraphicsTextItem(QGraphicsTextItem):
         if modifiers == Qt.ControlModifier:
             e.ignore()
         else:
+            for item in self.scene().selectedItems():
+                item.setSelected(False)
             QGraphicsTextItem.mousePressEvent(self, e)
 
     def mouseMoveEvent(self, e):
@@ -35,11 +37,11 @@ class GraphicsNode(QGraphicsEllipseItem):
         QGraphicsEllipseItem.__init__(self)
         self.text = label
             
-        self.textItem = GraphicsTextItem(self.text, self)
+        self.textItem = GraphicsTextItem(self.text, parent = self)
         self.textItem.setTextInteractionFlags(Qt.TextEditorInteraction)
         
         self.setRect(self.textItem.boundingRect().marginsAdded(QMarginsF(10,10,10,10)))
-        self.setFlags(QGraphicsItem.ItemIsMovable)
+        self.setFlags(QGraphicsItem.ItemIsSelectable)
         
         self.observers = set()
         self.edgeInConstruction = None
@@ -61,13 +63,17 @@ class GraphicsNode(QGraphicsEllipseItem):
         self.scene().addItem(self.edgeInConstruction)
             
     def mousePressEvent(self, e):
-        modifiers = QApplication.keyboardModifiers()
+        modifiers = QApplication.keyboardModifiers()        
         if modifiers == Qt.NoModifier:
+            for item in self.scene().selectedItems():
+                item.setSelected(False)
+            self.setSelected(True)
             self.buildEdge(e.scenePos())
 
     def mouseReleaseEvent(self, e):
         if self.edgeInConstruction != None:
             self.scene().removeItem(self.edgeInConstruction)
+            self.observers.remove(self.edgeInConstruction)
             self.edgeInConstruction = None
             items = [it for it in self.scene().items(e.scenePos()) if isinstance(it, GraphicsNode)]
             if len(items) != 0:
@@ -93,3 +99,8 @@ class GraphicsNode(QGraphicsEllipseItem):
     def delObserver(self, obs):
         if obs in self.observers:
             self.obervers.remove(obs)
+
+    def removeEdges(self):
+        for obs in self.observers:
+            self.scene().removeItem(obs)
+        self.observers = set()

@@ -1,5 +1,5 @@
-from PyQt5.QtCore import QLineF, QPointF
-from PyQt5.QtWidgets import QGraphicsLineItem
+from PyQt5.QtCore import QLineF, QPointF, Qt
+from PyQt5.QtWidgets import QGraphicsLineItem, QGraphicsItem, QApplication
 from PyQt5.QtGui import QPen
 
 def closestPointTo(point, path):
@@ -38,6 +38,15 @@ class GraphicsEdge(QGraphicsLineItem):
         p2 = closestPointTo(startShape.boundingRect().center(), endShape)
                 
         self.setLine(QLineF(p1, p2))
+
+        self.setFlags(QGraphicsItem.ItemIsSelectable)
+
+    def mousePressEvent(self, e):
+        modifiers = QApplication.keyboardModifiers()        
+        if modifiers == Qt.NoModifier:
+            for item in self.scene().selectedItems():
+                item.setSelected(False)
+            self.setSelected(True)
         
     def obsUpdate(self):
         startShape = self.startNode.mapToScene(self.startNode.shape())
