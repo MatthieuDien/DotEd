@@ -1,106 +1,25 @@
-import pydot_ng as pydot
-from PyQt5.QtCore import Qt, QMimeData, QMarginsF
-from PyQt5.QtGui import QDrag, QTransform
-from PyQt5.QtWidgets import QGraphicsEllipseItem, QGraphicsTextItem, QApplication, QGraphicsItem
-from edge import GraphicsSemiEdge, GraphicsEdge
+from tkinter import ttk
+import tkinter as tk
 
-class GraphicsTextItem(QGraphicsTextItem):
+class GraphicsNode:
+    def __init__(self, parent, x, y, text="lolilol"):
+        self.parent = parent
+        self.x = x
+        self.y = y
+        self.text = text
+        self.vc = self.parent.register(self.redraw)
+        self.draw()
 
-    def __init__(self, *args, **kwargs):
-        QGraphicsTextItem.__init__(self, *args, **kwargs)
+    def draw(self):
+        self.entry = ttk.Entry(self.parent, textvariable=tk.StringVar(), validate='all', validatecommand=(self.vc,), width=len(self.text))
+        self.window_id = self.parent.create_window(self.x, self.y, window=self.entry)
+        (x,y) = self.entry.bbox()
+        self.oval_id = self.parent.create_oval(self.x-x/2, self.y-y/2, self.x+x/2, self.y+y/2)
+        self.entry.insert(0, self.text)
+        self.redraw()
 
-    def keyPressEvent(self, e):
-        QGraphicsTextItem.keyPressEvent(self, e)
-        self.parentItem().update()
-
-    def mousePressEvent(self, e):
-        modifiers = QApplication.keyboardModifiers()
-        if modifiers == Qt.ControlModifier:
-            e.ignore()
-        else:
-            for item in self.scene().selectedItems():
-                item.setSelected(False)
-            QGraphicsTextItem.mousePressEvent(self, e)
-
-    def mouseMoveEvent(self, e):
-        parent = self.parentItem()
-        if parent.edgeInConstruction == None:
-            parent.buildEdge(parent.scenePos())
-        parent.mouseMoveEvent(e)
-
-    def mouseReleaseEvent(self, e):
-        self.parentItem().mouseReleaseEvent(e)
-        
-class GraphicsNode(QGraphicsEllipseItem):
-
-    def __init__(self, label = ""):
-        QGraphicsEllipseItem.__init__(self)
-        self.text = label
-            
-        self.textItem = GraphicsTextItem(self.text, parent = self)
-        self.textItem.setTextInteractionFlags(Qt.TextEditorInteraction)
-        
-        self.setRect(self.textItem.boundingRect().marginsAdded(QMarginsF(10,10,10,10)))
-        self.setFlags(QGraphicsItem.ItemIsSelectable)
-        
-        self.observers = set()
-        self.edgeInConstruction = None
-        
-    def mouseMoveEvent(self, e):
-        modifiers = QApplication.keyboardModifiers()
-        if modifiers == Qt.ControlModifier:
-            mimeData = QMimeData()
-            drag = QDrag(e.widget())
-            mimeData.setText("node")
-            drag.setMimeData(mimeData)
-            drag.exec(Qt.MoveAction)
-            self.ungrabMouse()
-        if self.edgeInConstruction != None:
-            self.edgeInConstruction.obsUpdate(e.scenePos())
-
-    def buildEdge(self, pos):
-        self.edgeInConstruction = GraphicsSemiEdge(self, pos)
-        self.scene().addItem(self.edgeInConstruction)
-            
-    def mousePressEvent(self, e):
-        modifiers = QApplication.keyboardModifiers()        
-        if modifiers == Qt.NoModifier:
-            for item in self.scene().selectedItems():
-                item.setSelected(False)
-            self.setSelected(True)
-            self.buildEdge(e.scenePos())
-
-    def mouseReleaseEvent(self, e):
-        if self.edgeInConstruction != None:
-            self.scene().removeItem(self.edgeInConstruction)
-            self.observers.remove(self.edgeInConstruction)
-            self.edgeInConstruction = None
-            items = [it for it in self.scene().items(e.scenePos()) if isinstance(it, GraphicsNode)]
-            if len(items) != 0:
-                self.scene().addItem(GraphicsEdge(self, items[0]))
-            
-    def mouseDoubleClickEvent(self, e):
-        self.scene().removeItem(self.edgeInConstruction)
-        self.edgeInConstruction = None
-
-    def update(self, *args, **kwargs):
-        self.setRect(self.textItem.boundingRect().marginsAdded(QMarginsF(10,10,10,10)))
-        QGraphicsEllipseItem.update(self, *args, **kwargs)
-        
-    def paint(self, *args, **kwargs):
-        QGraphicsEllipseItem.paint(self, *args, **kwargs)
-        for obs in self.observers:
-            obs.obsUpdate()
-
-    def addObserver(self, obs):
-        if obs not in self.observers:
-            self.observers.add(obs)
-
-    def delObserver(self, obs):
-        if obs in self.observers:
-            self.obervers.remove(obs)
-
-    def removeEdges(self):
-        for obs in self.observers:
-            self.scene().removeItem(obs)
-        self.observers = set()
+    def redraw(self):
+        text = self.entry.get()
+        # print(text)
+        self.entry["width"] = len(text)
+        return True

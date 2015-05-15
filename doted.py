@@ -1,39 +1,44 @@
 import signal
 import sys
 
-from PyQt5.QtCore import Qt, QRectF
-from PyQt5.QtWidgets import QApplication, QGraphicsView, QVBoxLayout, QPushButton, QWidget
-from PyQt5.QtGui import QCursor
+import tkinter as tk
+
 from graph import GraphicsGraph
 from node import GraphicsNode
 
 signal.signal(signal.SIGINT, signal.SIG_DFL)
     
-class View(QGraphicsView):
+class MyCanvas(tk.Canvas):
 
     def __init__(self, parent):
-        super().__init__(parent)
-        self.scene = GraphicsGraph(self)
-        self.setScene(self.scene);
-        self.setSceneRect(QRectF(self.viewport().rect()));
-        
-class MyWindow(QWidget):
-    def __init__(self):
-        QWidget.__init__(self)
-        self.view = View(self)
-        self.view.setMouseTracking(True)
-        self.button = QPushButton('Clear View', self)
-        self.button.clicked.connect(self.handleClearView)
-        layout = QVBoxLayout(self)
-        layout.addWidget(self.view)
-        layout.addWidget(self.button)
-        self.setGeometry(800, 800, 800, 800)
-        self.show()
+        tk.Canvas.__init__(self, parent)
+        self.bind("<Double-Button-1>", self.createNode)
 
-    def handleClearView(self):
-        self.view.scene.clear()
-    
+    def createNode(self, event):
+        # self.create_oval(event.x, event.y, event.x+50, event.y+50)
+        GraphicsNode(self, event.x, event.y)
+        
+        
+class MyWindow(tk.Frame):
+    def __init__(self, master = None):
+        tk.Frame.__init__(self, master)
+        self.pack()
+        self.createWidgets()
+
+    def handleClear(self):
+        for obj in self.canvas.find_all():
+            self.canvas.delete(obj)
+
+    def createWidgets(self):
+        self.clearButton = tk.Button(self)
+        self.clearButton["text"] = "Clear"
+        self.clearButton["command"] = self.handleClear
+        self.clearButton.pack(side="bottom")
+
+        self.canvas = MyCanvas(self)
+        self.canvas.pack(side="top")
+        
 if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    ex = MyWindow()
-    sys.exit(app.exec_())
+    root = tk.Tk()
+    app = MyWindow(master=root)
+    app.mainloop()
