@@ -3,7 +3,6 @@ import sys
 
 import tkinter as tk
 
-from graph import GraphicsGraph
 from node import GraphicsNode
 
 signal.signal(signal.SIGINT, signal.SIG_DFL)
@@ -12,11 +11,25 @@ class MyCanvas(tk.Canvas):
 
     def __init__(self, parent):
         tk.Canvas.__init__(self, parent)
-        self.bind("<Double-Button-1>", self.createNode)
+        self.bind("<Double-Button-1>", self.doubleClickHandler)
+        self.nodes = dict()
 
-    def createNode(self, event):
-        # self.create_oval(event.x, event.y, event.x+50, event.y+50)
-        GraphicsNode(self, event.x, event.y)
+    def doubleClickHandler(self, event):
+        # closest_items = self.find_closest(event.x, event.y, halo=10)
+        closest_items = self.find_overlapping(event.x-5, event.y-5, event.x+5, event.y+5)
+        if closest_items == ():
+            node = GraphicsNode(self, event.x, event.y)
+            for i in node.getIds():
+                self.nodes[i] = node
+        else:
+            node = self.nodes[closest_items[0]]
+            print(closest_items)
+            node.editLabel()
+            
+
+        # else:
+        #     #TODO : Dispatch
+        #     self
         
         
 class MyWindow(tk.Frame):
