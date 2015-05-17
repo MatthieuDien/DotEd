@@ -12,7 +12,7 @@ signal.signal(signal.SIGINT, signal.SIG_DFL)
 class View(QGraphicsView):
 
     def __init__(self, parent):
-        super().__init__(parent)
+        QGraphicsView.__init__(self, parent)
         self.scene = GraphicsGraph(self)
         self.setScene(self.scene);
         self.setSceneRect(QRectF(self.viewport().rect()));

@@ -1,4 +1,3 @@
-import pydot_ng as pydot
 from PyQt5.QtCore import Qt, QMimeData, QMarginsF
 from PyQt5.QtGui import QDrag, QTransform
 from PyQt5.QtWidgets import QGraphicsEllipseItem, QGraphicsTextItem, QApplication, QGraphicsItem
@@ -53,7 +52,7 @@ class GraphicsNode(QGraphicsEllipseItem):
             drag = QDrag(e.widget())
             mimeData.setText("node")
             drag.setMimeData(mimeData)
-            drag.exec(Qt.MoveAction)
+            drag.exec_(Qt.MoveAction)
             self.ungrabMouse()
         if self.edgeInConstruction != None:
             self.edgeInConstruction.obsUpdate(e.scenePos())
