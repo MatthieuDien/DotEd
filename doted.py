@@ -12,12 +12,15 @@ class MyCanvas(tk.Canvas):
     def __init__(self, parent):
         tk.Canvas.__init__(self, parent)
         self.bind("<Double-Button-1>", self.doubleClickHandler)
+        self.bind("<Control-ButtonPress-1>", self.controlClickHandler)
+        self.bind("<Control-ButtonRelease-1>", self.controlReleaseHandler)
         self.nodes = dict()
-
+        self.on_drag = None
+        
     def doubleClickHandler(self, event):
         # closest_items = self.find_closest(event.x, event.y, halo=10)
         closest_items = self.find_overlapping(event.x-5, event.y-5, event.x+5, event.y+5)
-        if closest_items == ():
+        if len(closest_items) == 0:
             node = GraphicsNode(self, event.x, event.y)
             for i in node.getIds():
                 self.nodes[i] = node
@@ -25,12 +28,14 @@ class MyCanvas(tk.Canvas):
             node = self.nodes[closest_items[0]]
             print(closest_items)
             node.editLabel()
-            
 
-        # else:
-        #     #TODO : Dispatch
-        #     self
-        
+    def controlClickHandler(self, event):
+        closest_items = self.find_overlapping(event.x-5, event.y-5, event.x+5, event.y+5)
+        if len(closest_items) != 0:
+            self.on_drag = self.nodes[closest_items[0]]
+
+    def controlReleaseHandler(self, event):
+        pass
         
 class MyWindow(tk.Frame):
     def __init__(self, master = None):
